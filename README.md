@@ -7,7 +7,7 @@ Using
 - Codeigniter
 
 ### Requirements
-- PHP 7.1
+- PHP 7.2 (I'm using PHP 7.3)
 - Database Mysql
 - Internet Connection
 

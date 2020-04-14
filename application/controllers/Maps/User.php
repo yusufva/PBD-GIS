@@ -38,6 +38,44 @@ class User extends CI_Controller {
         $this->load->view('templates/footer.php');
     }
 
+    public function export()
+    {
+        # code...
+        $this->load->model('Excel_model');
+        $excel = new PHPExcel();
+
+        $excel->setActiveSheetIndex(0);
+
+        $sheet = $excel->getActiveSheet()->setTitle('Voucher Enabled');
+        
+        // set title kolom
+        $sheet->setCellValue('A1', 'Id');
+        $sheet->setCellValue('B1', 'Kelurahan');
+        $sheet->setCellValue('C1', 'Wilayah');
+        $data = $this->Excel_model->fetch_data();
+        $i = 2;
+
+        foreach($data as $row){
+            $id = $row['id_wilayah'];
+            $kel = $row['nama_wilayah'];
+            $kec = $row['wilayah'];
+
+            // buat baris dam kolom pada excel
+            // isi kolom A
+            $sheet->setCellValue('A' . $i, $id);
+            $sheet->setCellValue('B' . $i, $kel);
+            $sheet->setCellValue('C' . $i, $kec);
+            
+            $i++;
+        }
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="Data-Kecamatan.xls"');
+        $excel_writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
+        $excel_writer->save('php://output');
+    }
+
+
 }
 
 /* End of file Maps.php */

@@ -2,6 +2,13 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-body">
+            <form action="<?= base_url('Maps/user/export') ?>" method="post">
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <button class="btn btn-success">Export</button>
+                    </div>
+                </div>
+                </form>
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped">
                     <caption>©tabel data kelurahan kota Semarang</caption>

@@ -11,6 +11,7 @@ class Admin extends CI_Controller {
         //Do your magic here
         is_logged_in();
         $this->load->model('Maps_model');
+        $this->load->model('Excel_model');
     }
 
     public function index()
@@ -100,6 +101,72 @@ class Admin extends CI_Controller {
         $this->load->view('user/m_maps');
         $this->load->view('templates/footer');
     }
+
+    public function export()
+    {
+        # code...
+        $excel = new PHPExcel();
+
+        $excel->setActiveSheetIndex(0);
+
+        $sheet = $excel->getActiveSheet()->setTitle('Voucher Enabled');
+        
+        // set title kolom
+        $sheet->setCellValue('A1', 'Id');
+        $sheet->setCellValue('B1', 'Kelurahan');
+        $sheet->setCellValue('C1', 'Wilayah');
+        $data = $this->Excel_model->fetch_data();
+        $i = 2;
+
+        foreach($data as $row){
+            $id = $row['id_wilayah'];
+            $kel = $row['nama_wilayah'];
+            $kec = $row['wilayah'];
+
+            // buat baris dam kolom pada excel
+            // isi kolom A
+            $sheet->setCellValue('A' . $i, $id);
+            $sheet->setCellValue('B' . $i, $kel);
+            $sheet->setCellValue('C' . $i, $kec);
+            
+            $i++;
+        }
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="Data-Kecamatan.xls"');
+        $excel_writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
+        $excel_writer->save('php://output');
+    }
+
+    public function upload()
+    {
+        # code...
+        if(isset($_FILES["filekcmt"]["name"]))
+        {
+            // $path = $_FILES["filekcmt"]["tmp_name"];
+            $name = $_FILES["filekcmt"]["name"];
+            $path = './vendor/upload/';
+            move_uploaded_file($_FILES["filekcmt"]["tmp_name"], $path . $name);
+            $file_type = PHPExcel_IOFactory::identify($path.$name);
+            $objReader = PHPExcel_IOFactory::createReader($file_type);
+            $objPHPExcel = $objReader->load($path.$name);
+            $sheet = $objPHPExcel->getActiveSheet();
+            $highestRow = $sheet->getHighestRow();
+            $highestColumn = $sheet->getHighestColumn();
+            $sheet_data = $sheet->rangeToArray('A2:' . $highestColumn . $highestRow, null, true, true, true);
+            // $used = str_to_date($sheet_data['A']);
+
+            foreach ($sheet_data as $row) {
+                $data = [
+                    'nama_wilayah' => $row['A'],
+                    'wilayah'=> $row['B']
+                ];
+                $this->Excel_model->insert($data);
+            }
+            redirect('Maps/admin');
+        }
+    }
+
 
 }
 
